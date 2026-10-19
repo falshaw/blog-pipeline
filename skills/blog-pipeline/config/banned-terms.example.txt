@@ -1,0 +1,17 @@
+# Banned terms — one extended regex per line, matched case-insensitively. Lines starting with # are ignored.
+#
+# Copy to .claude/blog-pipeline/banned-terms.local.txt and keep it LOCAL ONLY (it is listed in .gitignore):
+# the literal strings are themselves the sensitive data — a home town, a legal entity name, a registration
+# number, a family member's name. Never paste them into a skill file, a prompt log or a public repo.
+#
+# Prefix a line with  site-id:  to apply it to one site only (e.g. a real name banned on a brand site
+# but allowed on the personal site).
+
+# all sites
+example-hometown
+example holding gmbh
+HRB ?000000
+private\.example@mail\.example
+
+# brand / pseudonymous sites only
+example-ai:alex example

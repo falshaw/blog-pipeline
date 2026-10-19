@@ -1,0 +1,153 @@
+# blog-pipeline — site configuration (EXAMPLE)
+#
+# Copy to  .claude/blog-pipeline/sites.yaml  in your project (or point BLOG_PIPELINE_CONFIG at it).
+# The skill reads this file before every run; nothing site-specific lives in the skill itself.
+# Paths are relative to the project root. Both sites below are fictional.
+
+defaults:
+  languages:
+    primary: en            # the language the post is first written in
+    secondary: de          # the native twin (not a translation) — set to null for single-language sites
+  scouting:
+    candidates_per_site: 4 # 3–5 on the board
+    window_days: 30
+  seo:
+    title_chars: [50, 60]
+    meta_description_chars: [140, 160]
+    min_words: 600
+    target_words: [1500, 2500]
+    internal_links: [3, 7]  # minimum, aim
+  writing:
+    em_dash_policy: sparse  # none | sparse (< 3 per 1,000 words)
+    stop_slop_min_score: 35
+  local_llm:                # optional — drafts on a local Ollama model (scripts/local-llm.mjs)
+    enabled: false
+    model: ""               # e.g. a 27B–32B instruct model; empty = first installed
+    url: http://127.0.0.1:11434
+  images:                   # optional — local ComfyUI + FLUX (blog-images skill)
+    enabled: false
+    comfyui_url: http://127.0.0.1:8188
+    hero: { width: 1344, height: 768 }
+    og: { width: 1200, height: 630 }
+    widths: [400, 800, 1200]
+    webp_quality: 82
+  privacy:
+    banned_terms_file: .claude/blog-pipeline/banned-terms.local.txt   # local-only, never commit
+    forbid_patterns: []     # extra regexes no new post may contain (see example-ai below)
+
+sites:
+  # ── Site 1: brand voice, how-to-led AI engineering blog, static HTML ──────────────────────
+  - id: example-ai
+    name: Example AI Notes
+    domain: example.com
+    base_url: https://example.com
+    identity:
+      mode: brand            # brand | person | pseudonym
+      display_name: Example AI Notes
+      # The literal JSON-LD block every post uses for author AND publisher. Copy from here, never from an old post.
+      entity_jsonld: '{"@type":"Organization","@id":"https://example.com/about#organization","name":"Example AI Notes","url":"https://example.com/"}'
+      real_name_allowed: false
+    beat:
+      summary: Building, running and securing AI systems in production.
+      belongs_when: The story or problem is about AI itself — models, agents, retrieval, evaluation, AI security, the labs and their policies.
+      never:
+        - generic productivity listicles
+        - vulnerability-ID-led news (describe an incident, never lead with its identifier)
+    formats:
+      lead: practical how-to guide answering a problem people search for (about 3 of 4 posts)
+      minority: opinionated take on a surprising news story
+    languages: { primary: en, secondary: de }
+    source_tree: sites/example-ai
+    catalogue:
+      glob: "blog/*/index.html"          # how to list every existing post
+    post:
+      template: newest                    # copy STRUCTURE from the newest post by datePublished
+      paths:
+        primary: "blog/{slug}/index.html"
+        secondary: "de/blog/{slug}/index.html"
+      urls:
+        primary: "https://example.com/blog/{slug}/"
+        secondary: "https://example.com/de/blog/{slug}/"
+      categories: [Guides, Architecture, Security, Research, Opinion]
+      cta: { href: "/contact/", label: "Ask a question" }
+    images:
+      dir: images/                        # {slug}.webp + {slug}-400w/-800w/-1200w.webp
+      og: "og/{slug}.jpg"
+      style_family: any                    # any | warm | a list of style numbers from blog-images
+    discovery:
+      sitemap: sitemap.xml
+      llms: [llms.txt]                     # hand-maintained; add EN + DE entries
+      feeds:
+        - { path: blog/feed.xml, generator: null }       # null = edit by hand, matching existing items
+        - { path: de/blog/feed.xml, generator: null }
+      hubs: [blog/index.html, de/blog/index.html]
+    search_data:
+      command: null                        # optional: a command that prints Search Console queries as JSON
+    privacy:
+      forbid_patterns: ['CVE-[0-9]{4}-[0-9]+']
+    deploy:
+      method: ftp                          # ftp | sftp | rsync | gh-pages | command
+      command: python .claude/skills/blog-pipeline/scripts/ftp-deploy.py --local sites/example-ai
+      dry_run: python .claude/skills/blog-pipeline/scripts/ftp-deploy.py --local sites/example-ai --dry-run
+      env_file: .env.example-ai            # FTP_HOST / FTP_USER / FTP_PASSWORD / FTP_REMOTE_DIR — never committed
+      detached: true                       # run in the background, verify after it exits
+      shared_account_group: host-a         # sites on one hosting account never deploy at the same time
+    indexnow:
+      enabled: true
+      key_env: INDEXNOW_KEY_EXAMPLE_AI
+
+  # ── Site 2: personal byline, German-first consultant field notes, static HTML ─────────────
+  - id: example-notes
+    name: Alex Example — Field Notes
+    domain: example.org
+    base_url: https://example.org
+    identity:
+      mode: person
+      display_name: Alex Example
+      entity_jsonld: '{"@type":"Person","@id":"https://example.org/#person","name":"Alex Example","url":"https://example.org/"}'
+      real_name_allowed: true              # the byline name only — never address, phone, employer or clients
+      same_as: ["https://www.linkedin.com/in/example"]
+    beat:
+      summary: Field notes of an independent IT-security consultant working with mid-size companies.
+      belongs_when: The story lands on the consultant's seat — the contracting market, client practice, audits, what to tell a client.
+      never:
+        - generic workplace or AI-survey news with no consultant angle
+        - product or service marketing ("why hire me")
+        - the owner's other sites or projects
+    formats:
+      lead: how-to for the reader who owns the problem (the lead or manager facing the audit)
+      minority: field-note essay on a market shift
+    languages: { primary: de, secondary: en }   # German-first site
+    source_tree: sites/example-notes
+    catalogue:
+      glob: "posts/*.html"
+    post:
+      template: newest
+      paths:
+        primary: "posts/{slug}.html"
+        secondary: "en/posts/{slug}.html"
+      urls:
+        primary: "https://example.org/posts/{slug}.html"
+        secondary: "https://example.org/en/posts/{slug}.html"
+      categories: [Leitfaden, Praxis, Markt, Compliance]
+      cta: { href: "/#kontakt", label: "Anfrage stellen" }
+    images:
+      dir: assets/img/
+      og: "og/{slug}.jpg"
+      widths: [400, 800]                   # the base file is the full-width image
+      style_family: any
+    discovery:
+      sitemap: sitemap.xml
+      llms: [llms.txt, llms-full.txt]
+      feeds:
+        - { path: feed.xml, generator: "python sites/example-notes/_build/generate_feed.py" }
+      hubs: [index.html, en/index.html]   # homepage cards are the only listing
+      bump_lastmod_on_hubs: true
+    deploy:
+      method: rsync
+      command: rsync -avz --exclude '.htaccess' --exclude '.well-known/' sites/example-notes/ deploy@example.org:/var/www/example.org/
+      dry_run: rsync -avzn --exclude '.htaccess' --exclude '.well-known/' sites/example-notes/ deploy@example.org:/var/www/example.org/
+      detached: false
+      shared_account_group: host-b
+    indexnow:
+      enabled: false

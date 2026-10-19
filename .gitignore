@@ -1,0 +1,20 @@
+# secrets and local-only config
+.env
+.env.*
+!.env.example
+*.local.txt
+*.local.yaml
+banned-terms.local.txt
+
+# runtime state
+.deploy-state/
+.local-llm/
+*.log
+*.tmp
+*.part
+
+# outputs
+output/
+node_modules/
+__pycache__/
+*.pyc
