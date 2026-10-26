@@ -12,7 +12,7 @@ This folder is a modified copy of **stop-slop** by Hardik Pandya.
 3. **"Don't over-correct" section** and extra quick checks (significance inflation, copula avoidance, chatbot register, vague authority, formatting-layer tells, model artifacts in links), several sourced from Wikipedia, "Signs of AI writing".
 4. **German section** (`references/phrases.md` → "German AI tells (Deutsch)") and rule 11 — written for this fork.
 5. **Patterns from no-ai-slop** (`references/phrases.md` → "Added from no-ai-slop"): weasel attribution, faux-insight setups, importance puffery, superficial analysis tails, fake-profound endings.
-   - Source: https://github.com/petergyang/no-ai-slop — MIT License, Copyright (c) 2026 Peter Yang.
+   - Source: https://github.com/petergyang/no-ai-slop — MIT License, Copyright (c) 2026 Peter Yang — full text in [LICENSE-no-ai-slop](LICENSE-no-ai-slop).
 6. Example 7 ("keep what's load-bearing") in `references/examples.md`.
 7. Optional second-opinion pass through a local model instead of a hosted API.
 

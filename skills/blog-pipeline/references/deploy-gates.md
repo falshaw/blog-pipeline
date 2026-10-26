@@ -46,8 +46,8 @@ Run these from the site's `source_tree`. `$NEW` = the new and edited post files 
 - **Banned-term.** Load the local banned-terms file, apply global lines and the lines scoped to this site:
   ```bash
   site=example-ai
-  grep -vE '^\s*(#|$)' .claude/blog-pipeline/banned-terms.local.txt \
-    | sed -nE "/^${site}:/{s/^${site}://p;b;}; /^[a-z0-9-]+:/!p" > /tmp/bp-banned.txt
+  grep -vE '^[[:space:]]*(#|$)' .claude/blog-pipeline/banned-terms.local.txt \
+    | awk -v s="${site}:" 'index($0, s) == 1 { print substr($0, length(s) + 1); next } !/^[a-z0-9-]+:/' > /tmp/bp-banned.txt
   grep -rniEf /tmp/bp-banned.txt $NEW     # must print nothing
   ```
   Check alt text, filenames, OG paths, JSON-LD and llms entries too — they are public, indexed text. After the deploy, sweep the live URLs once more if you have a crawler for it.
@@ -78,6 +78,7 @@ set -a; . ./.env.example-ai; set +a        # FTP_HOST FTP_USER FTP_PASSWORD FTP_
 python .claude/skills/blog-pipeline/scripts/ftp-deploy.py --local sites/example-ai --dry-run
 python .claude/skills/blog-pipeline/scripts/ftp-deploy.py --local sites/example-ai
 ```
+First deploy: with no manifest in `.deploy-state/` yet, every file counts as new and the whole tree goes up over the live site. The script refuses that run without `--first-run`; make it its own ask-first step, after the user has seen the full dry-run list.
 
 **SFTP** (key-based auth, no password in env):
 ```bash
@@ -108,5 +109,5 @@ Never add `--delete` without the same excludes and a dry run first.
    4. listed on every hub page;
    5. **every internal `href` on the new pages returns 200** — extract and `curl -s -o /dev/null -w '%{http_code}'` each; a 301 or 404 is a fail.
    Copy footer and CTA from the newest live post, never an old one — old templates carry dead footer links and redirecting CTAs.
-3. **IndexNow** for sites with `indexnow.enabled`: [../scripts/indexnow-ping.py](../scripts/indexnow-ping.py) `<host> <primary-url> <secondary-url>`. Google doesn't consume IndexNow; Bing, Yandex, Naver and Seznam do, and Bing's index feeds several AI answer engines.
+3. **IndexNow** for sites with `indexnow.enabled`: [../scripts/indexnow-ping.py](../scripts/indexnow-ping.py) `--key "$INDEXNOW_KEY_EXAMPLE_AI" <host> <primary-url> <secondary-url>` (the script reads only `--key` or `INDEXNOW_KEY`, so pass the site's `indexnow.key_env` variable explicitly). Google doesn't consume IndexNow; Bing, Yandex, Naver and Seznam do, and Bing's index feeds several AI answer engines.
 4. **SEO audit** of the new pages with whatever SEO-audit skill you use. Fix findings on the new posts locally without asking; site-wide findings go into the closing report with a recommendation; the re-deploy is ask-first again. The run is not done until that report exists.

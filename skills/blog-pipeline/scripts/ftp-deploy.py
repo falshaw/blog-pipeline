@@ -13,6 +13,8 @@ Credentials come from environment variables ONLY (never from arguments, never fr
 What it does
   * Walks --local, hashes every file (sha256) and compares with a local manifest of the last deploy.
     Only new or changed files are uploaded (--force-all re-sends everything).
+  * First run: with no manifest every file counts as new, so the whole tree goes up over the live
+    site. The script refuses that unless you pass --first-run (--only uploads still work without it).
   * Upload order: assets (images, css, js, fonts) -> pages (*.html) -> discovery files
     (sitemap*.xml, feed*.xml, llms*.txt, robots.txt) LAST, so the sitemap never points at a page
     that is not up yet.
@@ -28,6 +30,7 @@ time: shared hosts often cap concurrent connections per account.
 
 Usage
   python ftp-deploy.py --local ./site --dry-run
+  python ftp-deploy.py --local ./site --first-run      # once, after checking the dry run
   python ftp-deploy.py --local ./site --remote /htdocs --exclude "_drafts/**" --exclude "*.psd"
   python ftp-deploy.py --local ./site --only blog/my-post/index.html --only images/my-post.webp
 """
@@ -74,10 +77,10 @@ def phase(rel):
     return 1
 
 
-def env(name, default=None, required=False):
+def env(name, default=None, required=False, hint="Credentials are read from the environment only."):
     val = os.environ.get(name, default)
     if required and not val:
-        sys.exit(f"Missing environment variable {name}. Credentials are read from the environment only.")
+        sys.exit(f"Missing environment variable {name}. {hint}")
     return val
 
 
@@ -149,19 +152,23 @@ def main():
     ap.add_argument("--force-all", action="store_true", help="upload every file, ignoring the manifest")
     ap.add_argument("--delete-orphans", action="store_true", help="delete remote files this script uploaded before and that are gone locally")
     ap.add_argument("--dry-run", action="store_true", help="print the plan, change nothing")
+    ap.add_argument("--first-run", action="store_true",
+                    help="confirm a run without a manifest, which uploads the whole tree over the live site")
     a = ap.parse_args()
 
     local_root = Path(a.local).resolve()
     if not local_root.is_dir():
         sys.exit(f"--local {local_root} is not a directory")
-    remote_root = a.remote or env("FTP_REMOTE_DIR", required=True)
+    remote_root = a.remote or env("FTP_REMOTE_DIR", required=True,
+                                  hint="Set it to the remote web root (e.g. /htdocs) or pass --remote.")
     protect = DEFAULT_PROTECT + a.protect
     exclude = DEFAULT_EXCLUDE + a.exclude
 
     host = env("FTP_HOST", "host")
     manifest_path = Path(a.manifest) if a.manifest else Path(".deploy-state") / (
         f"{host}-{remote_root.strip('/').replace('/', '_') or 'root'}.json")
-    old = json.loads(manifest_path.read_text("utf-8")) if manifest_path.exists() else {}
+    first_run = not manifest_path.exists()
+    old = {} if first_run else json.loads(manifest_path.read_text("utf-8"))
 
     files = {}
     for p in sorted(local_root.rglob("*")):
@@ -195,6 +202,12 @@ def main():
         print(f"  + {rel}")
     for rel in orphans:
         print(f"  - {rel}")
+    if first_run and not a.only:
+        print(f"WARNING: no manifest at {manifest_path}. This run uploads EVERY file above over the live "
+              f"site, replacing whatever is there now.", file=sys.stderr)
+        if not a.dry_run and not a.first_run:
+            sys.exit("Refusing a full upload without --first-run. Check the dry run, then re-run with --first-run "
+                     "(or use --only for single files).")
     if a.dry_run or (not to_upload and not orphans):
         return
 

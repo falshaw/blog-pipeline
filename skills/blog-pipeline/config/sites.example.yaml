@@ -21,9 +21,7 @@ defaults:
     em_dash_policy: sparse  # none | sparse (< 3 per 1,000 words)
     stop_slop_min_score: 35
   local_llm:                # optional — drafts on a local Ollama model (scripts/local-llm.mjs)
-    enabled: false
-    model: ""               # e.g. a 27B–32B instruct model; empty = first installed
-    url: http://127.0.0.1:11434
+    enabled: false          # model and server are set by -m / LOCAL_LLM_MODEL / OLLAMA_URL (references/local-llm.md)
   images:                   # optional — local ComfyUI + FLUX (blog-images skill)
     enabled: false
     comfyui_url: http://127.0.0.1:8188

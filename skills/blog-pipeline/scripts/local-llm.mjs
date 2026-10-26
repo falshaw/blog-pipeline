@@ -70,8 +70,8 @@ try {
   process.exit(2);
 }
 const installed = (tags.models ?? []).map((m) => m.name);
-model ??= process.env.LOCAL_LLM_MODEL ?? PREFERRED.find((m) => installed.includes(m)) ?? installed[0];
-if (model && !model.includes(':')) model += ':latest'; // Ollama lists untagged pulls as name:latest
+const withTag = (m) => (m && !m.includes(':') ? `${m}:latest` : m); // Ollama lists untagged pulls as name:latest
+model = withTag(model ?? process.env.LOCAL_LLM_MODEL ?? PREFERRED.map(withTag).find((m) => installed.includes(m)) ?? installed[0]);
 if (!model || !installed.includes(model)) {
   console.error(`Model ${model ?? '(none)'} not pulled. Installed: ${installed.join(', ') || '(none)'} — run "ollama pull <model>".`);
   process.exit(1);
@@ -109,7 +109,9 @@ process.on('exit', () => {
     unlinkSync(LOCK);
   } catch {}
 });
+// process.exit() runs the 'exit' handler above, so an interrupted or killed run never leaves a stale lock.
 process.on('SIGINT', () => process.exit(130));
+process.on('SIGTERM', () => process.exit(143));
 
 // Streamed over node:http(s), not fetch: fetch (undici) drops a request after 300 s without response
 // headers, and Ollama sends none before the first token, so long or queued answers would die at 5 min.

@@ -5,7 +5,7 @@ Optional. Enable with `defaults.local_llm.enabled: true`. Goal: spend as few mai
 ## Setup
 
 1. Install [Ollama](https://ollama.com) and pull a capable instruct model. For bilingual drafting a 27B–32B dense model is a good floor; smaller models write noticeably weaker German and invent facts more often.
-2. Set the model in the config, or `LOCAL_LLM_MODEL`, or `LOCAL_LLM_PREFERRED=modelA,modelB` (first installed wins).
+2. Pick the model: `-m <model>` per call, or `LOCAL_LLM_MODEL`, or `LOCAL_LLM_PREFERRED=modelA,modelB` (first installed wins); with none set, the first installed model is used. Ollama on another host or port: `OLLAMA_URL` (default `http://127.0.0.1:11434`). The script reads only these flags and variables, not the config.
 3. Test: `node .claude/skills/blog-pipeline/scripts/local-llm.mjs "Say OK."` — exit 2 means Ollama is not running.
 
 Script: [../scripts/local-llm.mjs](../scripts/local-llm.mjs). System prompt: [../scripts/prompts/no-slop-writer.md](../scripts/prompts/no-slop-writer.md).
@@ -24,6 +24,8 @@ Script: [../scripts/local-llm.mjs](../scripts/local-llm.mjs). System prompt: [..
 ```bash
 LLM=.claude/skills/blog-pipeline/scripts/local-llm.mjs
 SYS="$(cat .claude/skills/blog-pipeline/scripts/prompts/no-slop-writer.md)"
+export LOCAL_LLM_MODEL=qwen2.5:32b              # or pass -m <model> per call
+# export OLLAMA_URL=http://127.0.0.1:11434      # only if Ollama is not on the default address
 
 # digest a long source into fact notes (input never enters the agent's context)
 node $LLM -s "$SYS" "Extract every number, date, named source and verbatim quote relevant to <topic>, each with where it appears." -f source.txt -o notes.md

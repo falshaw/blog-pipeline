@@ -10,7 +10,7 @@ The failure this skill exists to stop: a pretty-but-meaningless picture that ign
 Two things are always separate, and conflating them is the root mistake:
 
 - **Subject** = *what is depicted*. Comes from the post's actual content. This is the hard part and the part people skip.
-- **Style** = *how it's rendered*. Drawn at random from the verified pool (Styles 4–17 in [references/prompt-recipes.md](references/prompt-recipes.md)). This is the easy part.
+- **Style** = *how it's rendered*. Drawn at random from the verified pool (Styles 4–17 in [references/prompt-recipes.md](references/prompt-recipes.md); Style 6 is for security posts only, Styles 12–17 for simple subjects only). This is the easy part.
 
 If you only get one thing right, get the subject right. A plain-but-on-topic image beats a gorgeous off-topic one every time.
 
@@ -37,7 +37,7 @@ Map the abstract idea to something a camera or sculptor could capture. Lead with
 - **Per-site style family.** If a site's existing heroes share a house style (e.g. warm clay characters in teal/cream/amber), set `images.style_family` and randomise *within* that family so new heroes sit well next to the old ones. Palette coherence with the live blog beats raw randomness.
 - **Vary art style AND palette** — a one-palette set reads as templated slop. Palette per post (amber/teal, navy/gold, indigo/electric-blue, charcoal/red, blue/gold…). The hard floor is the **slop signature**: dark navy + glowing orbs + floating particles + mesh grid.
 - **Text-free.** FLUX.1-schnell garbles in-image text. Avoid subjects built on a *text surface* (card, label, button, screen, list); let meaning ride on shape, colour and mechanism. Never ship a hero with garbled words.
-- **Engine verdicts:** Styles 4–11 (3D/photographic) hold on any subject; Styles 12–17 (flat/illustrated) only on a simple 1–2-element subject. Paper-cut, low-poly and dark-cinematic-on-a-neutral-subject tested poorly. **Glossy over-smooth 3D/clay is itself a slop dialect** — vary toward grain and texture. Detail → [references/engine-notes.md](references/engine-notes.md).
+- **Engine verdicts:** Styles 4–11 (3D/photographic) hold on any subject, except Style 6 (dark cinematic), which is for security posts only; Styles 12–17 (flat/illustrated) only on a simple 1–2-element subject. Paper-cut, low-poly and dark-cinematic-on-a-neutral-subject tested poorly. **Glossy over-smooth 3D/clay is itself a slop dialect** — vary toward grain and texture. Detail → [references/engine-notes.md](references/engine-notes.md).
 
 ### 4. Write the prompt — subject first, style second
 

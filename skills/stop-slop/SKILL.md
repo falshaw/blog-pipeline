@@ -91,7 +91,7 @@ Before delivering prose:
 - Headings that skip a level (H2 → H4) or "X and Y" section titles ("Challenges and Legacy," "Awards and Recognition")? Fix the hierarchy, retitle with what the section argues.
 - German text: any „Zusammenfassend lässt sich sagen“, „von entscheidender Bedeutung“, „Mehrwert schaffen“, or English where a common German word exists? Fix per the German list.
 
-Source for the Wikipedia-derived checks: Wikipedia, "Signs of AI writing" (https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing). Detail in the two reference files.
+Source for the Wikipedia-derived checks: Wikipedia, "Signs of AI writing" (https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing). Detail in the three reference files.
 
 ## Scoring
 

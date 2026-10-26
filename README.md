@@ -25,8 +25,9 @@ Three [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills) t
 # from your project root
 mkdir -p .claude/skills
 cp -r path/to/blog-pipeline/skills/* .claude/skills/
-# or for every project: cp -r path/to/blog-pipeline/skills/* ~/.claude/skills/
 ```
+
+Install per project, not under `~/.claude/skills/`: the configs and references call the scripts by their project path (`.claude/skills/...`).
 
 Then configure:
 
@@ -36,7 +37,18 @@ cp .claude/skills/blog-pipeline/config/sites.example.yaml   .claude/blog-pipelin
 cp .claude/skills/blog-pipeline/config/banned-terms.example.txt .claude/blog-pipeline/banned-terms.local.txt
 ```
 
-Edit `sites.yaml` — one entry per site: domain, beat, identity, languages, source tree, post paths, image paths, discovery files, deploy command. Keep `banned-terms.local.txt` and any `.env.*` files out of version control (see [.gitignore](.gitignore)).
+Edit `sites.yaml` — one entry per site: domain, beat, identity, languages, source tree, post paths, image paths, discovery files, deploy command. Keep the local files the pipeline and its scripts create out of version control. Add this to your project's `.gitignore`:
+
+```gitignore
+# blog-pipeline: per-site FTP credentials (deploy.env_file)
+.env.*
+# banned-terms.local.txt
+*.local.txt
+# ftp-deploy.py upload manifests
+.deploy-state/
+# local-llm.mjs lock file and opt-in call log (the log can hold private input)
+.local-llm/
+```
 
 Start a run in Claude Code: *"write a blog post for example.com"* or *"scout topics for all my sites"*.
 
@@ -78,7 +90,7 @@ skills/
                    deploy-gates, geo-2026, local-llm, last30days, lessons) · scripts/ (local-llm.mjs,
                    prompts/no-slop-writer.md, ftp-deploy.py, indexnow-ping.py)
   blog-images/     SKILL.md · references/ (prompt-recipes, engine-notes, delivery) · scripts/ (comfy_generate.py, make_web_set.py)
-  stop-slop/       SKILL.md · LICENSE (upstream MIT) · NOTICE.md (fork changes) · references/
+  stop-slop/       SKILL.md · LICENSE (upstream MIT) · LICENSE-no-ai-slop · NOTICE.md (fork changes) · references/
 ```
 
 Scripts live inside the skill folders so the skills stay self-contained after you copy them into `.claude/skills/`.

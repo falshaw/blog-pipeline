@@ -96,7 +96,12 @@ def main():
 
     print(f"model={model} size={a.width}x{a.height} steps={a.steps} cfg={a.cfg} seed={seed}", file=sys.stderr)
     wf = build_workflow(model, a.prompt, a.negative, a.width, a.height, a.steps, a.cfg, seed)
-    queued = _post(f"{base}/prompt", {"prompt": wf})
+    try:
+        queued = _post(f"{base}/prompt", {"prompt": wf})
+    except urllib.error.HTTPError as e:
+        # A 400 carries ComfyUI's validation error (unknown checkpoint, bad size, missing node) in the body.
+        body = e.read().decode("utf-8", "replace")[:2000]
+        raise SystemExit(f"ComfyUI rejected the prompt (HTTP {e.code}): {body}")
     pid = queued.get("prompt_id")
     if not pid:
         raise SystemExit(f"ComfyUI did not queue the prompt: {queued}")
